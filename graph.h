@@ -212,13 +212,13 @@ graph<V, L> graph<V, L>::BFS(V node) {
 template<class V, class L>
 graph<V, L> graph<V, L>::DFS(V node) {
     graph<V, L> bst(false);
-    std::stack < V > rec;
+    std::queue < V > rec;
     rec.push(node);
     bst.insert_vertex(node);
 
     while (rec.empty() == false) {
 
-        V current = rec.top();
+        V current = rec.front();
         
         rec.pop();
         
@@ -238,13 +238,6 @@ graph<V, L> graph<V, L>::DFS(V node) {
     }
     return bst;
 };
-
-/**
- ;
- 
- ;ldskjf;aslkdjf;laksdjf;alk
- * askdjhfaskjdhflkj
- */
 
 #endif	/* GRAPH_H */
 
