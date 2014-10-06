@@ -212,13 +212,13 @@ graph<V, L> graph<V, L>::BFS(V node) {
 template<class V, class L>
 graph<V, L> graph<V, L>::DFS(V node) {
     graph<V, L> bst(false);
-    std::queue < V > rec;
+    std::stack < V > rec;
     rec.push(node);
     bst.insert_vertex(node);
 
     while (rec.empty() == false) {
 
-        V current = rec.front();
+        V current = rec.top();
         
         rec.pop();
         
