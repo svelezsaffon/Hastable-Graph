@@ -17,9 +17,6 @@
 #include <stack>
 #include <iostream>
 #include <vector>
-#include <bits/stl_tree.h>
-
-
 
 template<class V, class L>
 class graph {
@@ -27,8 +24,8 @@ class graph {
     //this will create a graph that is O(1) insertion and retrieval. Adjacency matrix like
     //The worst case scenario is that we have to rehash. THe rehash occurs when 
     // we run out of buckets
-    
-    
+
+
 
 public:
     std::unordered_map< V, std::unordered_map < V, L > > central;
@@ -46,17 +43,30 @@ public:
     typedef typename std::unordered_map< V, std::unordered_map < V, L > >::iterator graph_iterator;
 
 
+    //this is just for some algorithms, fast nottation for an arc
+
+    struct link {
+        V from;
+        V to;
+        L value;
+
+        bool operator()(graph::link a, graph::link b) {
+            return (a.value > b.value);
+        };
+    };
+
+
+
     //this variable will tell us if the graph is undirected
     bool directed;
-
-
 
     void insert_vertex(V);
     void insert_edge(V, V, L);
     bool contains_node(V);
     graph < V, L > BFS(V);
     graph < V, L > DFS(V);
-    std::vector < V > path(V,V);
+    graph < V, L> close_friends(V);
+    std::vector < V > path(V, V);
     graph();
     graph(bool);
 
@@ -172,6 +182,7 @@ void graph<V, L>::insert_edge(V from, V to, L value) {
 
     };
 };
+
 /**
  * This is the Breadth deprth serach algorithm. It runs in O(V+E). starting from the node sent as parameter
  * Please reffer to Jeff Ericksons algorithm description, found on 
@@ -182,16 +193,78 @@ void graph<V, L>::insert_edge(V from, V to, L value) {
 template<class V, class L>
 graph<V, L> graph<V, L>::BFS(V node) {
     graph<V, L> bst(false);
-    std::queue < V > rec;
+    std::queue<graph::link> rec;
+
+    std::unordered_map < V, bool> marked;
+
+    graph::graph_iterator it = central.begin();
+    while (it != central.end()) {
+        marked[(*it).first] = false;
+        it++;
+    }
+
+
+    graph::link aux;
+    V nul = '*';
+
+    aux.from = nul;
+    aux.to = node;
+    aux.value = 0;
+    rec.push(aux);
+
+
+    while (rec.empty() == false) {
+
+        graph::link current = rec.front();
+        rec.pop();
+
+
+
+        if (marked[current.to] == false) {
+
+            marked[current.to] = true;
+            bst.insert_vertex(current.to);
+
+            if (current.from != '*') {
+                bst.insert_vertex(current.from);
+                bst.insert_edge(current.to, current.from, current.value);
+            }
+
+
+            graph::neighbors_iter begin = begin_of(current.to);
+            graph::neighbors_iter end = end_of(current.to);
+
+            while (begin != end) {
+                if (!bst.contains_node((*begin).first)) {
+                    graph::link link;
+                    link.from = current.to;
+                    link.to = (*begin).first;
+                    link.value = (*begin).second;
+                    rec.push(link);
+                }
+
+                begin++;
+            }
+
+        }
+
+    }
+    return bst;
+};
+
+template<class V, class L>
+graph<V, L> graph<V, L>::DFS(V node) {
+    graph<V, L> bst(false);
+    std::stack < V > rec;
     rec.push(node);
     bst.insert_vertex(node);
 
     while (rec.empty() == false) {
 
-        V current = rec.back();
-        
+        V current = rec.top();
+
         rec.pop();
-        
+
         graph::neighbors_iter begin = begin_of(current);
         graph::neighbors_iter end = end_of(current);
         while (begin != end) {
@@ -209,34 +282,66 @@ graph<V, L> graph<V, L>::BFS(V node) {
     return bst;
 };
 
-template<class V, class L>
-graph<V, L> graph<V, L>::DFS(V node) {
+template <class V, class L>
+graph<V, L> graph<V, L>::close_friends(V to) {
     graph<V, L> bst(false);
-    std::stack < V > rec;
-    rec.push(node);
-    bst.insert_vertex(node);
+    std::priority_queue< graph::link, std::vector < graph::link >, graph::link> rec;
+
+    std::unordered_map < V, bool> marked;
+
+    graph::graph_iterator it = central.begin();
+    while (it != central.end()) {
+        marked[(*it).first] = false;
+        it++;
+    }
+
+
+    graph::link aux;
+    V nul = '*';
+
+    aux.from = nul;
+    aux.to = to;
+    aux.value = 0;
+    rec.push(aux);
+
 
     while (rec.empty() == false) {
 
-        V current = rec.top();
-        
+        graph::link current = rec.top();
         rec.pop();
-        
-        graph::neighbors_iter begin = begin_of(current);
-        graph::neighbors_iter end = end_of(current);
-        while (begin != end) {
 
-            if (!bst.contains_node((*begin).first)) {
-                //we haven't visited this node :) lets use it Yayaaa
-                bst.insert_vertex((*begin).first);
-                bst.insert_edge(current, (*begin).first, (*begin).second);
-                rec.push((*begin).first);
+        if (marked[current.to] == false) {
+
+            marked[current.to] = true;
+            bst.insert_vertex(current.to);
+
+            if (current.from != '*') {
+                bst.insert_vertex(current.from);
+                bst.insert_edge(current.to, current.from, current.value);
             }
 
-            begin++;
+
+            graph::neighbors_iter begin = begin_of(current.to);
+            graph::neighbors_iter end = end_of(current.to);
+
+            while (begin != end) {
+                if (!bst.contains_node((*begin).first)) {
+                    graph::link link;
+                    link.from = current.to;
+                    link.to = (*begin).first;
+                    link.value = (*begin).second;
+                    rec.push(link);
+                }
+
+                begin++;
+            }
+
         }
+
     }
     return bst;
+
+
 };
 
 #endif	/* GRAPH_H */
