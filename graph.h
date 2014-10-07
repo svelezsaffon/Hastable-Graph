@@ -65,7 +65,7 @@ public:
     bool contains_node(V);
     graph < V, L > BFS(V);
     graph < V, L > DFS(V);
-    graph < V, L> close_friends(V);
+    graph < V, L> SFS(V);
     std::vector < V > path(V, V);
     graph();
     graph(bool);
@@ -184,7 +184,7 @@ void graph<V, L>::insert_edge(V from, V to, L value) {
 };
 
 /**
- * This is the Breadth deprth serach algorithm. It runs in O(V+E). starting from the node sent as parameter
+ * This is the Breadth Depth Search algorithm. It runs in O(V+E). starting from the node sent as parameter
  * Please reffer to Jeff Ericksons algorithm description, found on 
  * http://web.engr.illinois.edu/~jeffe/teaching/algorithms/notes/18-graphs.pdf
  * @param node
@@ -252,38 +252,86 @@ graph<V, L> graph<V, L>::BFS(V node) {
     return bst;
 };
 
+
+/**
+ * This is the Depht Depth Search algorithm. It runs in O(V+E). starting from the node sent as parameter
+ * Please reffer to Jeff Ericksons algorithm description, found on 
+ * http://web.engr.illinois.edu/~jeffe/teaching/algorithms/notes/18-graphs.pdf
+ * @param node
+ * @return Graph with Depht first spanning tree
+ */
 template<class V, class L>
 graph<V, L> graph<V, L>::DFS(V node) {
-    graph<V, L> bst(false);
-    std::stack < V > rec;
-    rec.push(node);
-    bst.insert_vertex(node);
+     graph<V, L> bst(false);
+    std::stack<graph::link> rec;
+
+    std::unordered_map < V, bool> marked;
+
+    graph::graph_iterator it = central.begin();
+    while (it != central.end()) {
+        marked[(*it).first] = false;
+        it++;
+    }
+
+
+    graph::link aux;
+    V nul = '*';
+
+    aux.from = nul;
+    aux.to = node;
+    aux.value = 0;
+    rec.push(aux);
+
 
     while (rec.empty() == false) {
 
-        V current = rec.top();
-
+        graph::link current = rec.top();
         rec.pop();
 
-        graph::neighbors_iter begin = begin_of(current);
-        graph::neighbors_iter end = end_of(current);
-        while (begin != end) {
 
-            if (!bst.contains_node((*begin).first)) {
-                //we haven't visited this node :) lets use it Yayaaa
-                bst.insert_vertex((*begin).first);
-                bst.insert_edge(current, (*begin).first, (*begin).second);
-                rec.push((*begin).first);
+
+        if (marked[current.to] == false) {
+
+            marked[current.to] = true;
+            bst.insert_vertex(current.to);
+
+            if (current.from != '*') {
+                bst.insert_vertex(current.from);
+                bst.insert_edge(current.to, current.from, current.value);
             }
 
-            begin++;
+
+            graph::neighbors_iter begin = begin_of(current.to);
+            graph::neighbors_iter end = end_of(current.to);
+
+            while (begin != end) {
+                if (!bst.contains_node((*begin).first)) {
+                    graph::link link;
+                    link.from = current.to;
+                    link.to = (*begin).first;
+                    link.value = (*begin).second;
+                    rec.push(link);
+                }
+
+                begin++;
+            }
+
         }
+
     }
     return bst;
 };
 
+
+/**
+ * This is the shortest-first search. It runs in O(E log(E)). starting from the node sent as parameter
+ * Please reffer to Jeff Ericksons algorithm description, found on 
+ * http://web.engr.illinois.edu/~jeffe/teaching/algorithms/notes/18-graphs.pdf
+ * @param node
+ * @return Graph with Depht first spanning tree
+ */
 template <class V, class L>
-graph<V, L> graph<V, L>::close_friends(V to) {
+graph<V, L> graph<V, L>::SFS(V to) {
     graph<V, L> bst(false);
     std::priority_queue< graph::link, std::vector < graph::link >, graph::link> rec;
 

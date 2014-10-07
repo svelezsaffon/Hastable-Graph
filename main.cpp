@@ -14,28 +14,49 @@ using namespace std;
  */
 int main(int argc, char** argv) {
 
-    graph<char,float> gra;
-    
+    graph<char, float> gra;
+
     gra.insert_vertex('a');
     gra.insert_vertex('b');
     gra.insert_vertex('c');
+    gra.insert_vertex('d');
+    gra.insert_vertex('e');
+    gra.insert_vertex('f');
 
-    gra.insert_edge('a','b',1.0);
-    gra.insert_edge('a','c',1000.0);    
-    gra.insert_edge('b','c',1.0);    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+
+    gra.insert_edge('a', 'b', 1.0);
+    gra.insert_edge('a', 'c', 1.0);
+
+    gra.insert_edge('a', 'c', 1.0);
+    gra.insert_edge('b', 'c', 1.0);
+    gra.insert_edge('b', 'd', 1.0);
+    gra.insert_edge('b', 'e', 1.0);
+
+    gra.insert_edge('c', 'd', 1.0);
+    gra.insert_edge('c', 'e', 1.0);
+
+    gra.insert_edge('d', 'f', 1.0);
+    gra.insert_edge('e', 'f', 1.0);
+
+
+
+
+
+
+
+
     //gra.print();
-    gra.close_friends('a').print();
+    gra.DFS('a').print();
+
+    cout << endl;
+
+    gra.BFS('a').print();
     
     
+    cout << endl;
+
+    gra.SFS('a').print();
+
     return 0;
 }
 
